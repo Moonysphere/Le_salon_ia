@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Salon — Discussion d'équipe</title>
+<style>
+:root{--ink:#202536;--paper:#f7f5f1;--accent:#e8702a;--muted:#707787;--line:#e8e3da;--white:#fff;--shadow:0 8px 32px rgba(24,30,44,.07)}
+*{box-sizing:border-box}
+body{margin:0;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:var(--paper);color:var(--ink);font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px clamp(16px,3vw,32px);background:var(--ink);color:white;min-height:68px}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand-mark{display:grid;place-items:center;width:35px;height:35px;background:var(--accent);border-radius:12px;font-size:19px}
+header strong{font:700 22px Georgia,serif}
+#users{font-size:12px;color:#d3d6de;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.header-right{display:flex;align-items:center;gap:10px}
+#connection{font-size:12px;color:#c8d2d0;white-space:nowrap}
+#connection::before{content:"";display:inline-block;width:7px;height:7px;background:#9ca3af;border-radius:50%;margin-right:7px}
+#connection.online::before{background:#57d4a0}
+#queue{font-size:12px;background:var(--accent);padding:4px 10px;border-radius:99px;display:none;white-space:nowrap}
+main{min-height:0;overflow:auto;padding:26px clamp(16px,6vw,90px);display:flex;flex-direction:column;gap:13px;scroll-behavior:smooth}
+.welcome{align-self:center;text-align:center;margin:20px 0 28px;color:var(--muted);max-width:470px}
+.welcome-icon{width:54px;height:54px;display:grid;place-items:center;margin:0 auto 12px;background:#fff0e6;border:1px solid #f5d6c3;border-radius:17px;color:var(--accent);font-size:27px}
+.welcome h2{margin:0 0 5px;color:var(--ink);font:700 25px Georgia,serif}
+.welcome p{margin:0;font-size:13px}
+.line{max-width:min(82%,760px);word-break:break-word;white-space:pre-wrap}
+.from{font-weight:700;margin-right:8px;color:#323849}
+.salon{align-self:center;max-width:95%;color:var(--muted);font-style:italic;font-size:12px;text-align:center}
+.ia{background:var(--white);border:1px solid var(--line);border-left:4px solid var(--accent);padding:13px 16px;border-radius:4px 12px 12px 4px;white-space:pre-wrap;box-shadow:var(--shadow);max-width:min(90%,850px)}
+.ia .meta{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:18px 20px;max-width:min(100%,760px);box-shadow:var(--shadow)}
+.card h4{margin:0 0 12px;font:700 19px Georgia,serif}.card ul{margin:5px 0 12px 20px;padding:0}.card li{margin:4px 0}.card b{font-size:13px}
+.err{color:#aa3030;font-size:13px;background:#fff1f1;padding:10px 12px;border-radius:9px;align-self:flex-start}
+.command-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 18px;max-width:min(100%,680px);box-shadow:var(--shadow)}
+.command-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:750}.command-card-head span:first-child{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#fff0e6;color:#ba541c}
+.command-card pre{margin:0;white-space:pre-wrap;word-break:break-word;font:13px/1.75 ui-monospace,SFMono-Regular,Menlo,monospace;color:#485064}
+.command-card .subtle{color:var(--muted);font-size:12px;margin:0}
+.composer{background:#fff;border-top:1px solid var(--line);padding:12px clamp(14px,3vw,32px) 14px;box-shadow:0 -6px 30px rgba(30,35,45,.03)}
+.toolbar{display:flex;gap:7px;align-items:center;overflow-x:auto;padding:1px 1px 11px;scrollbar-width:thin}
+.toolbar-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:#969aa5;text-transform:uppercase;margin-right:5px;flex:none}
+.tool{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#f7f7f9;color:#4d5566;border:1px solid #ebeaf0;border-radius:9px;padding:7px 10px;font:600 12px system-ui;cursor:pointer;transition:.15s;flex:none}
+.tool:hover:not(:disabled){background:#fff0e6;border-color:#f3c4a7;color:#a54b1a;transform:translateY(-1px)}
+.tool:disabled{opacity:.4;cursor:not-allowed}.tool.danger{color:#b63e3e;background:#fff8f7}.tool.danger:hover:not(:disabled){background:#ffe9e6;border-color:#efb2a9}
+.tool-icon{font-size:15px;line-height:1}.toolbar-divider{height:22px;width:1px;background:var(--line);margin:0 3px;flex:none}
+form{display:flex;gap:9px;align-items:center}
+.input-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;border:1px solid #dedfe5;border-radius:12px;padding:0 13px;background:#fff;transition:.2s}
+.input-wrap:focus-within{border-color:#e9a078;box-shadow:0 0 0 3px #e8702a16}
+.input-prefix{color:#9ca0ac;font-size:18px}
+input{width:100%;min-width:0;border:0;outline:0;background:transparent;padding:13px 0;font:inherit}
+.send{display:flex;align-items:center;gap:8px;padding:13px 18px;background:var(--accent);color:white;border:0;border-radius:12px;font:700 13px system-ui;cursor:pointer;transition:.15s}
+.send:hover{background:#d35e1b}.send:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:11px;color:var(--muted);margin-top:9px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.hint b{color:#9a532a}
+.modal-backdrop{position:fixed;inset:0;z-index:10;background:#171b2bc4;display:grid;place-items:center;padding:18px;backdrop-filter:blur(3px)}
+.modal-backdrop[hidden]{display:none}
+.modal{width:min(640px,100%);max-height:min(82dvh,760px);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 20px 80px #0003;padding:26px}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:20px}.modal-kicker{color:var(--accent);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}.modal h2{font:700 28px Georgia,serif;margin:2px 0 4px}.modal p{margin:0;color:var(--muted);font-size:13px}
+.close{border:0;background:#f1f2f5;border-radius:9px;width:33px;height:33px;font-size:19px;cursor:pointer;color:#50596a}
+.command-group{margin:17px 0 0}.command-group h3{font-size:11px;color:#9a9eaa;text-transform:uppercase;letter-spacing:.09em;margin:0 0 8px}
+.command-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #f0eff0}
+.command-row:last-child{border-bottom:0}.command-row .desc{font-size:13px;color:#596172}.command-row code{background:#f5f3f0;color:#a54b1a;padding:5px 8px;border-radius:7px;font-size:12px;white-space:nowrap}
+.modal-foot{margin-top:20px;background:#fff7f1;padding:12px 14px;border-radius:10px;color:#85512f;font-size:12px}
+@media(max-width:650px){header{gap:8px;padding:10px 14px}.brand strong{font-size:19px}#users{font-size:11px}#connection{display:none}main{padding:17px 14px}.line{max-width:94%}.composer{padding:10px 12px 12px}.toolbar-label{display:none}.send{padding:13px}.send-label{display:none}.hint{font-size:10px}.modal{padding:19px}.modal h2{font-size:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="brand-mark">✦</span><strong>Le Salon</strong></div>
+  <span id="users">En attente de connexion…</span>
+  <div class="header-right"><span id="connection">Connexion…</span><span id="queue"></span></div>
+</header>
+<main id="log" aria-live="polite">
+  <div class="welcome"><div class="welcome-icon">✳</div><h2>Bienvenue au Salon</h2><p>Échangez avec votre équipe et interpellez l'IA avec <b>@ia</b>.<br>Choisissez votre pseudo pour commencer.</p></div>
+</main>
+<div class="composer">
+  <nav class="toolbar" aria-label="Commandes rapides">
+    <span class="toolbar-label">Raccourcis</span>
+    <button class="tool" type="button" data-help><span class="tool-icon">❔</span> Commandes</button>
+    <span class="toolbar-divider"></span>
+    <button class="tool" type="button" data-command="/users"><span class="tool-icon">👥</span> Membres</button>
+    <button class="tool" type="button" data-command="/history"><span class="tool-icon">🕘</span> Historique</button>
+    <button class="tool" type="button" data-command="/status"><span class="tool-icon">◉</span> Statut IA</button>
+    <button class="tool" type="button" data-command="/queue"><span class="tool-icon">☷</span> File IA</button>
+    <button class="tool" type="button" data-command="/resume"><span class="tool-icon">📋</span> Résumé</button>
+    <span class="toolbar-divider"></span>
+    <button class="tool" type="button" data-command="/cancel"><span class="tool-icon">↩</span> Annuler</button>
+    <button class="tool danger" type="button" data-command="/stop"><span class="tool-icon">■</span> Stop IA</button>
+    <button class="tool danger" type="button" data-command="/clear"><span class="tool-icon">⌫</span> Effacer</button>
+  </nav>
+  <form id="f">
+    <div class="input-wrap"><span class="input-prefix">✎</span><input id="q" placeholder="Choisissez un pseudo…" autocomplete="off" maxlength="1000" aria-label="Votre message"></div>
+    <button class="send" type="submit"><span class="send-label">Envoyer</span><span aria-hidden="true">➤</span></button>
+  </form>
+  <div class="hint"><span>Astuce : <b>@ia</b> pour poser une question · <b>/help</b> pour découvrir les commandes</span><span>Entrée pour envoyer</span></div>
+</div>
+<div class="modal-backdrop" id="help-modal" hidden>
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="modal-head"><div><div class="modal-kicker">Guide rapide</div><h2 id="help-title">Toutes les commandes</h2><p>Des raccourcis pour piloter votre salon et son assistant IA.</p></div><button class="close" type="button" id="close-help" aria-label="Fermer">×</button></div>
+    <div class="command-group"><h3>Discussion</h3>
+      <div class="command-row"><span class="desc">Voir les participants connectés</span><code>/users</code></div>
+      <div class="command-row"><span class="desc">Afficher les 10 derniers messages</span><code>/history</code></div>
+      <div class="command-row"><span class="desc">Effacer l'historique côté serveur</span><code>/clear</code></div>
+    </div>
+    <div class="command-group"><h3>Assistant IA</h3>
+      <div class="command-row"><span class="desc">Poser une question à l'assistant</span><code>@ia question</code></div>
+      <div class="command-row"><span class="desc">Consulter l'état de l'assistant</span><code>/status</code></div>
+      <div class="command-row"><span class="desc">Voir les requêtes en attente</span><code>/queue</code></div>
+      <div class="command-row"><span class="desc">Annuler sa demande en attente</span><code>/cancel</code></div>
+      <div class="command-row"><span class="desc">Arrêter sa réponse IA en cours</span><code>/stop</code></div>
+      <div class="command-row"><span class="desc">Créer une synthèse structurée</span><code>/resume</code></div>
+    </div>
+    <div class="modal-foot">💡 Cliquez sur les raccourcis en bas de page pour lancer directement les commandes. La commande <b>/clear</b> n'efface pas les messages déjà affichés chez les autres participants.</div>
+  </section>
+</div>
+<script type="module">
+const $ = (s) => document.querySelector(s);
+const log = $("#log");
+const iaBubbles = new Map();
+let ws, pseudo = null, retry = 0;
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const push = (node) => { log.append(node); log.scrollTop = log.scrollHeight; return node; };
+function line(from, text) {
+  if (from === "salon") return push(el("div", "line salon", text));
+  const d = el("div", "line");
+  d.append(el("span", "from", from), document.createTextNode(text));
+  push(d);
+}
+function summary(s) {
+  const c = el("div", "card");
+  c.append(el("h4", null, "✦ Synthèse du salon"));
+  for (const [titre, items] of [["Sujets abordés", s.sujets], ["Décisions", s.decisions], ["Actions", s.actions.map(a => `${a.qui} → ${a.quoi}`)]]) {
+    c.append(el("b", null, titre));
+    const ul = el("ul");
+    (items.length ? items : ["Aucun élément identifié"]).forEach(i => ul.append(el("li", null, i)));
+    c.append(ul);
+  }
+  push(c);
+}
+const commandLabels = {
+  "/help": ["❔", "Guide des commandes"],
+  "/users": ["👥", "Membres connectés"],
+  "/history": ["🕘", "Derniers messages"],
+  "/status": ["◉", "État de l'assistant"],
+  "/queue": ["☷", "File d'attente IA"],
+  "/cancel": ["↩", "Annulation de demande"],
+  "/stop": ["■", "Arrêt de l'IA"],
+  "/clear": ["⌫", "Historique du salon"],
+};
+function commandInfo(text) {
+  const firstLine = text.split("\n")[0];
+  let command = null;
+  if (/^Commandes disponibles/.test(text)) command = "/help";
+  else if (/^Utilisateurs connectés/.test(text)) command = "/users";
+  else if (/^IA : /.test(text)) command = "/status";
+  else if (/^Réponse en cours :/.test(text)) command = "/queue";
+  else if (/^L'historique du salon/.test(text)) command = "/clear";
+  else if (/^\d+\. /.test(firstLine) || /^Aucun message dans l'historique/.test(text)) command = "/history";
+  else if (/demande IA en attente/.test(text)) command = "/cancel";
+  else if (/réponse IA|arrêter cette réponse/.test(text)) command = "/stop";
+  if (!command) return false;
+  const [icon, title] = commandLabels[command];
+  const c = el("div", "command-card");
+  const head = el("div", "command-card-head");
+  head.append(el("span", null, icon), el("span", null, title));
+  c.append(head, el("pre", null, text));
+  push(c);
+  return true;
+}
+function setConnection(online) {
+  $("#connection").textContent = online ? "Connecté" : "Déconnecté";
+  $("#connection").classList.toggle("online", online);
+  document.querySelectorAll("[data-command]").forEach(b => b.disabled = !online || !pseudo);
+}
+function sendCommand(command) {
+  if (!pseudo) { line("salon", "Choisissez d'abord un pseudo pour utiliser les commandes."); $("#q").focus(); return; }
+  if (!ws || ws.readyState !== WebSocket.OPEN) { line("salon", "Connexion indisponible. Réessayez dans un instant."); return; }
+  if (command === "/clear" && !confirm("Effacer l'historique du salon sur le serveur ? Cette action est visible par tous.")) return;
+  ws.send(JSON.stringify({ type: "say", text: command }));
+}
+function connect() {
+  setConnection(false);
+  ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+  ws.onopen = () => { retry = 0; if (pseudo) ws.send(JSON.stringify({ type: "join", pseudo })); setConnection(true); };
+  ws.onclose = () => { setConnection(false); line("salon", "Connexion perdue, reconnexion…"); setTimeout(connect, Math.min(10000, 500 * 2 ** retry++)); };
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    switch (m.type) {
+      case "said": if (m.from === "ia") { const b = push(el("div", "ia")); b.append(el("span", "from", "ia"), document.createTextNode(m.text)); } else line(m.from, m.text); break;
+      case "presence": $("#users").textContent = m.users.length ? `${m.users.length} en ligne · ${m.users.join(" · ")}` : "Aucun membre connecté"; break;
+      case "info": if (!commandInfo(m.text)) line("salon", m.text); break;
+      case "ia_start": { const b = push(el("div", "ia")); b.append(el("span", "from", "✦ ia")); b.dataset.for = m.for; iaBubbles.set(m.id, b); break; }
+      case "ia_delta": { const b = iaBubbles.get(m.id); if (b) { b.append(document.createTextNode(m.text)); log.scrollTop = log.scrollHeight; } break; }
+      case "ia_done": { const b = iaBubbles.get(m.id); if (b) b.append(el("span", "meta", `pour ${b.dataset.for}${m.tokens ? " · " + m.tokens + " tokens" : ""}${m.cancelled ? " · interrompu" : ""}`)); iaBubbles.delete(m.id); break; }
+      case "ia_queue": $("#queue").style.display = m.size ? "inline" : "none"; $("#queue").textContent = `IA : ${m.size} en file`; break;
+      case "summary": summary(m.data); break;
+      case "error": push(el("div", "err", "⚠️ " + m.message)); break;
+    }
+  };
+}
+$("#f").onsubmit = (e) => {
+  e.preventDefault();
+  const v = $("#q").value.trim();
+  if (!v || !ws || ws.readyState !== WebSocket.OPEN) return;
+  if (!pseudo) {
+    pseudo = v;
+    ws.send(JSON.stringify({ type: "join", pseudo }));
+    $("#q").placeholder = "Votre message… ou @ia votre question";
+    setConnection(true);
+  } else if (v.toLowerCase() === "/help") {
+    showHelp();
+  } else {
+    ws.send(JSON.stringify({ type: "say", text: v }));
+  }
+  $("#q").value = "";
+};
+const modal = $("#help-modal");
+function showHelp() { modal.hidden = false; $("#close-help").focus(); }
+function hideHelp() { modal.hidden = true; $("#q").focus(); }
+document.querySelector("[data-help]").addEventListener("click", showHelp);
+$("#close-help").addEventListener("click", hideHelp);
+modal.addEventListener("click", (e) => { if (e.target === modal) hideHelp(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) hideHelp(); });
+document.querySelectorAll("[data-command]").forEach(button => button.addEventListener("click", () => sendCommand(button.dataset.command)));
+setConnection(false);
+connect();
+</script>
+</body>
+</html>
